@@ -1,0 +1,22 @@
+# Node.js
+node_modules/
+
+# Nest.js
+/dist/
+
+# Arquivos de configuração do VSCode
+.vscode/
+
+# Arquivos temporários
+*.log
+*.tmp
+
+# Arquivos de build
+/build/
+
+# Arquivos de ambiente
+.env
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
