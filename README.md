@@ -87,7 +87,6 @@ Exemplo de arquivo `.env`:
 # Configuração do Kafka
 KAFKA_BROKER_URI=kafka://localhost:9092
 KAFKA_BROKER_GROUP=my-group
-KAFKA_TOPIC=my-topic
 
 # Configuração do MongoDB
 MONGODB_URI=mongodb://localhost:27017
@@ -98,6 +97,6 @@ MQTT_BROKER_URL=mqtt://localhost:1883
 MQTT_USERNAME=my-username
 MQTT_PASSWORD=my-password
 MQTT_PORT=1883
-MQTT_TOPIC=my-mqtt-topic
+TOPIC=my-mqtt-topic
 
 ```
