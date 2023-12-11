@@ -8,20 +8,11 @@ export const insertMessageDB = async (
 ): Promise<void> => {
   const client = new MongoClient(MONGODB_URI)
 
-  const extractTopic = () => {
-    const parts = COLLECTION_NAME.split('_')
-    if (parts.length === 2) {
-      return parts[1]
-    } else {
-      throw new Error('Unexpected topic format')
-    }
-  }
-
   try {
     await client.connect()
 
     const db = client.db(DB_NAME)
-    const collection = db.collection(extractTopic())
+    const collection = db.collection(COLLECTION_NAME)
     const lastMessage = await collection
       .aggregate([
         {
@@ -54,8 +45,9 @@ export const insertMessageDB = async (
 
     if (countResult.length === 0 || timeDifference(lastMessage[0].createdAt)) {
       const now = new Date().setMilliseconds(0)
-      const message = JSON.parse(data)
-      await collection.insertOne({ message, createdAt: new Date(now).toISOString() })
+      const createdAt = new Date(now).toISOString()
+      const message = JSON.parse(data).Data
+      await collection.insertOne({ ...message, createdAt })
       console.log('Message entered into the database')
     }
   } finally {

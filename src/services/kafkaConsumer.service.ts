@@ -1,13 +1,11 @@
-import { Kafka, EachMessagePayload } from 'kafkajs'
+import { Kafka } from 'kafkajs'
 
 export const consumeKafkaData = async (
-  brokers: string[],
+  kafka: Kafka,
   topic: string,
   group: string,
   onData: (data: string) => void,
 ) => {
-  const kafka = new Kafka({ brokers })
-
   const consumer = kafka.consumer({ groupId: group })
 
   const run = async () => {
