@@ -1,48 +1,45 @@
+// server.ts
 import express from 'express'
 import http from 'http'
-import { consumeMqttData } from './services/mqtt.service'
-import { consumeKafkaData } from './services/kafka.service'
-import { consumeWebSocketData } from './services/websocket.gateway'
-import { storeLastMessage } from './services/mongodb.service'
 import dotenv from 'dotenv'
 
-dotenv.config()
+import { consumeMqttData } from './services/mqtt.service'
+import { consumeKafkaData } from './services/kafkaConsumer.service'
+import { producerKafkaData } from './services/kafkaProducer.service'
+import { insertMessageDB } from './services/mongodb.service'
 
-const KAFKA_BROKER_URI = process.env.KAFKA_BROKER_URL || ''
-const MONGODB_URI = process.env.MONGODB_URL || ''
+dotenv.config()
+const MONGODB_URI = process.env.MONGODB_URI || ''
+const DB_NAME = process.env.DB_NAME || ''
+const KAKFKA_BROKER = process.env.KAFKA_BROKER_URL || ''
+const KAFKA_GROUP = process.env.KAFKA_GROUP || 'group'
+const KAFKA_TOPIC = process.env.KAFKA_TOPIC || ''
+const MQTT_TOPIC = process.env.MQTT_TOPIC || ''
 const MQTT_CONFIG = {
   brokerUrl: process.env.MQTT_BROKER_URL || '',
   username: process.env.MQTT_USERNAME || undefined,
   password: process.env.MQTT_PASSWORD || undefined,
+  port: Number(process.env.MQTT_PORT),
   reconnectAttempts: parseInt(process.env.MQTT_RECONNECT_ATTEMPTS || '0', 10),
 }
 
-// Criação da aplicação Express e do servidor HTTP
 const app = express()
 const server = http.createServer(app)
 
-// Configuração dos WebSockets
-consumeWebSocketData(server, async (data) => {
-  // Ao receber dados via WebSocket, armazena a última mensagem no MongoDB
-  await storeLastMessage(MONGODB_URI, data)
+if (MQTT_CONFIG) {
+  consumeMqttData(MQTT_CONFIG, MQTT_TOPIC, (data) => {
+    if (KAKFKA_BROKER) {
+      producerKafkaData([KAKFKA_BROKER ?? ''], KAFKA_TOPIC ?? 'topic', data)
+    }
+  })
+}
+
+consumeKafkaData([KAKFKA_BROKER ?? ''], 'bess_pcs', KAFKA_GROUP, (data) => {
+  insertMessageDB(data, KAFKA_TOPIC, MONGODB_URI, DB_NAME)
 })
 
-// Configuração do MQTT
-consumeMqttData(MQTT_CONFIG, 'topic', (data) => {
-  // Ao receber dados via MQTT, exibe no console
-  console.log(`MQTT Data: ${data}`)
-})
-
-// Configuração do Kafka
-consumeKafkaData([KAFKA_BROKER_URI], 'topic', (data) => {
-  // Ao receber dados via Kafka, exibe no console
-  console.log(`Kafka Data: ${data}`)
-})
-
-// Porta em que o servidor irá ouvir
 const PORT = 3000
 
-// Inicia o servidor HTTP
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`)
 })

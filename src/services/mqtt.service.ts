@@ -1,44 +1,47 @@
-import * as mqtt from 'mqtt'
+import { connect, MqttClient } from 'mqtt'
 
 interface MqttConfig {
   brokerUrl: string
   username?: string
   password?: string
+  port?: number
   reconnectAttempts?: number
 }
-// Função para consumir dados do broker MQTT
+
 export const consumeMqttData = (
   config: MqttConfig,
   topic: string,
   onData: (data: string) => void,
 ) => {
-  const { brokerUrl, username, password, reconnectAttempts } = config
+  const { brokerUrl, username, password, port } = config
 
   if (!brokerUrl) {
     throw new Error('MqttConfig must have a valid brokerUrl.')
   }
 
-  // Conexão ao broker MQTT
-  const client = mqtt.connect(brokerUrl, {
-    username,
-    password,
-    reconnectPeriod: reconnectAttempts ? 1000 * 60 * 2 : undefined,
+  let client: MqttClient
+
+  client = connect(brokerUrl, {
+    username: username,
+    password: password,
+    port: port,
     protocol: 'ssl',
     rejectUnauthorized: false,
+    reconnectPeriod: 1000,
+    clean: true,
   })
 
-  // Ao se conectar, subscreve ao tópico especificado
   client.on('connect', () => {
+    console.log('Connected')
     client.subscribe(topic)
   })
 
-  // Ao receber mensagem, chama a função onData
   client.on('message', (_, message) => {
     onData(message.toString())
   })
 
   client.on('error', (error) => {
-    console.error('MQTT Connection Error:', error.message)
-    client.end() // Encerra a conexão para evitar comportamento inesperado
+    console.error('MQTT Connection Error:', error)
+    client.end()
   })
 }

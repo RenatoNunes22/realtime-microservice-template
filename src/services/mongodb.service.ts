@@ -1,27 +1,75 @@
 import { MongoClient } from 'mongodb'
 
-export const storeLastMessage = async (MONGODB_URI: string, message: string) => {
-  if (!MONGODB_URI) {
-    throw new Error('MongoDB URL is not defined.')
-  }
-
+export const insertMessageDB = async (
+  data: string,
+  COLLECTION_NAME: string,
+  MONGODB_URI: string,
+  DB_NAME: string,
+): Promise<void> => {
   const client = new MongoClient(MONGODB_URI)
+
+  const extractTopic = () => {
+    const parts = COLLECTION_NAME.split('_')
+    if (parts.length === 2) {
+      return parts[1]
+    } else {
+      throw new Error('Unexpected topic format')
+    }
+  }
 
   try {
     await client.connect()
 
-    const db = client.db()
-    const messengerCollection = db.collection('messenger')
-    const timestamp = new Date().toISOString()
+    const db = client.db(DB_NAME)
+    const collection = db.collection(extractTopic())
+    const lastMessage = await collection
+      .aggregate([
+        {
+          $sort: {
+            createdAt: -1,
+          },
+        },
+        {
+          $limit: 1,
+        },
+        {
+          $project: {
+            _id: 0,
+            data: 0,
+          },
+        },
+      ])
+      .toArray()
 
-    await messengerCollection.insertOne({
-      message,
-      createdAt: timestamp,
-    })
-    console.log(`Message stored in MongoDB: ${message}`)
-  } catch (error) {
-    console.error('MongoDB Connection Error:', error)
+    const countResult = await collection
+      .aggregate([
+        {
+          $group: {
+            _id: null,
+            total: { $sum: 1 },
+          },
+        },
+      ])
+      .toArray()
+
+    if (countResult.length === 0 || timeDifference(lastMessage[0].createdAt)) {
+      const now = new Date().setMilliseconds(0)
+      const message = JSON.parse(data)
+      await collection.insertOne({ message, createdAt: new Date(now).toISOString() })
+      console.log('Message entered into the database')
+    }
   } finally {
     await client.close()
+  }
+}
+
+const timeDifference = (oldDate: string): boolean => {
+  if (oldDate) {
+    const now = new Date().getMinutes()
+    const oldTime = new Date(oldDate).getMinutes() || 0
+    const differenceInMS = now - oldTime
+    return differenceInMS >= 1 ? true : false
+  } else {
+    return false
   }
 }
