@@ -1,4 +1,4 @@
-# Projeto de Mensageria Real-time
+# Projeto de mensageria em tempo real
 
 Este projeto oferece uma estrutura boilerplate para a implementação de um sistema de mensageria em tempo real. Utilizando tecnologias como MQTT, Apache Kafka, MongoDB, WebSockets, TypeScript e Node.js (Express), o projeto proporciona uma solução escalável e eficiente para comunicação em tempo real.
 
