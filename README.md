@@ -1,6 +1,6 @@
 # Projeto de mensageria em tempo real
 
-Este projeto oferece uma estrutura boilerplate para a implementação de um sistema de mensageria em tempo real. Utilizando tecnologias como MQTT, Apache Kafka, MongoDB, WebSockets, TypeScript e Node.js (Express), o projeto proporciona uma solução escalável e eficiente para comunicação em tempo real.
+Este projeto representa uma sólida arquitetura orientada a eventos, configurada como um template versátil para o lançamento eficiente de projetos de mensageria. Sua missão essencial é atuar como uma ponte eficaz entre fontes de dados, adotando uma abordagem estruturada para receber eventos de um broker MQTT. A jornada continua com o processamento inteligente dessas mensagens através do robusto Apache Kafka, proporcionando uma camada escalável e distribuída para a gestão eficiente de eventos assíncronos. Inicialmente, o projeto está habilmente configurado para consumir eventos de um tópico específico do broker MQTT, oferecendo uma experiência plug-and-play para projetos iniciais. No entanto, a verdadeira inovação está na facilidade com que este template se expande, permitindo a inclusão de lógicas mais sofisticadas. A arquitetura é flexível e escalonável, adaptando-se sem esforço para incluir a subscrição e o processamento de vários tópicos MQTT, abrindo portas para uma ampla variedade de casos de uso.
 
 ## Arquitetura
 
